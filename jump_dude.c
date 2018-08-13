@@ -4,25 +4,25 @@
 #include <cab202_timers.h>
 #include <math.h>
 
-
-// Include additional headers here
-
-// Constants used to configure game
-#define DELAY (10) /* Millisecond delay between game updates */
+#define DELAY (10) 
 #define GAME_HEIGHT (6)
 #define BLOCK_SPACING (2)
 
-// Add additional constants here
+//Defining the structs
+typedef struct {
+    sprite_id sprite;
+    int type;
+} game_sprite;
 
-// Variables used to store the game’s dynamic state.
-bool game_over = false; /* Set this to true when game is over */
 
-// Define additional global variables here.
-int score, lives, time;
-int hero_column, hero_row;
-int treasure_column, treasure_row, treasure_dx;
-bool treausre_stop = false;
-int grid[30][30], columns, rows;
+// Defining global variables
+bool game_over = false, first = false;
+bool treasure_stop, air_born;
+bool flying = false;
+int score, lives, time, columns, rows;
+timer_id treasure_timer, game_timer;
+sprite_id hero, treasure;
+game_sprite blocks[30][30];
 
 
 char * hero_image = " 0  "
@@ -31,156 +31,115 @@ char * hero_image = " 0  "
 
 char * treasure_image = "##T##"
                         "#####";
+char * safe_block = "=========="
+                    "==========";
+char * danger_block = "xxxxxxxxxx"
+                      "xxxxxxxxxx";
+char * no_block = "          "
+                  "          ";
 
-sprite_id hero;
-sprite_id treasure;
-timer_id treasure_timer, game_timer;
-// Setup game.
-void draw_block(int column, int row, char image) {
+void make_column( int * danger_block, int column);
 
-    int x = (7 + BLOCK_SPACING)* column;
-    int y = (row + 1) * 6 + GAME_HEIGHT + row * 2;
+void setup( void ) {
+    columns = screen_width()/12;
 
-    int w = 7;
-    int h = 2;
+    air_born = false;
+    rows = 4;
+    score = 0;
+    lives = 10;
+    time = 0;
+    treasure_stop = false;
+    hero = sprite_create(2, GAME_HEIGHT + 2 , 4, 3, hero_image);
+    treasure = sprite_create(2,GAME_HEIGHT + 17,5,2, treasure_image);
+    treasure_timer = create_timer(500);
+    game_timer = create_timer(1000);
 
-    draw_line(x, y, x+w-1, y, image);
-    draw_line(x, y, x, y+h-1, image);
-    draw_line(x+w-1, y, x+w-1, y+h-1, image);
-    draw_line(x, y+h-1, x+w-1, y+h-1, image);  
-}    
-
-void move_hero(int column, int row){
-    hero_column = column, hero_row = row;
-    int x = (7 + BLOCK_SPACING) * column + 1;
-    int y = (row + 1) * 6 + GAME_HEIGHT + row * 2 - 3;
-    sprite_move_to(hero,x,y);
+    int danger_blocks = 0;
+    blocks[0][0].sprite = sprite_create( 0, GAME_HEIGHT + 5, 9, 2, "sssssssss" "sssssssss" );   
+    blocks[0][0].type = 1;
+    while (danger_blocks < 2) {
+        for (int column = 0; column < columns; column ++){
+            make_column( &danger_blocks, column );
+            danger_blocks = 3;
+        }
+    }
+    
 }
 
-void move_treasure(int column, int row){
-    treasure_column = column, treasure_row = row;
-    int x = (7 + BLOCK_SPACING) * column + 1;
-    int y = (row + 1) * 6 + GAME_HEIGHT + row * 2 - 2;
-    sprite_move_to(treasure,x,y);
+
+
+char * get_type_image(int type);
+
+void make_column( int * danger_blocks, int column ) {
+    int block_type, safe_blocks, x, y, width;
+    do {
+        safe_blocks = 0;
+        for (int row = 0; row < rows ; row ++){
+            if (column + row == 0) row ++;
+            block_type = rand() % 3;
+            width = rand() % 6 + 5;
+
+            if (block_type == 1) safe_blocks ++;
+            //else if (block_type == 2) *danger_blocks ++;
+            if (column == 0) x = 0;
+            else x = 5 +  sprite_x(blocks[column-1][row].sprite) + sprite_width(blocks[column-1][row].sprite);
+
+            y = GAME_HEIGHT + 7 + row * 5 + (row-1)*2 ;
+
+            blocks[column][row].type = block_type;
+            blocks[column][row].sprite = sprite_create( x, y, width, 2, get_type_image(block_type));
+
+        }
+    } while(safe_blocks < 1);
 }
 
-void the_time_pls(char message[100]) {
+char * get_type_image( int type ){
+    if ( type == 1 ){
+        return safe_block;
+    } else if ( type == 2) {
+        return danger_block;
+    } else {
+        return no_block;
+    }
+}
+
+
+void fly( sprite_id * hero ) {
+    char key = get_char();
+    if (key == 'w')sprite_turn_to( *hero, sprite_dx(*hero),sprite_dy(*hero) -0.08);
+    else if (key == 'd') sprite_turn_to( *hero, sprite_dx(*hero) +0.1,sprite_dy(*hero));
+    else if (key == 'a') sprite_turn_to( *hero, sprite_dx(*hero) -0.1,sprite_dy(*hero));
+    else if (key == 's') sprite_turn_to( *hero, sprite_dx(*hero),sprite_dy(*hero) +0.08);
+}
+
+
+
+
+void the_time_pls(char message[100], int time) {
     int seconds = time % 60;
     int minutes = time / 60;
     sprintf(message,"Time: %d%d:%d%d", minutes/10, minutes%10, seconds/10, seconds%10);
 }
 
 
-void update_grid(int column, int row, int type) {
-    grid[column][row] = type;
+
+
+
+
+
+
+void gravity( sprite_id *hero, bool on_block) {
+    if (on_block) sprite_turn_to( *hero, sprite_dx( *hero ), 0 );
+    else sprite_turn_to( *hero, sprite_dx( *hero ), sprite_dy( *hero ) + 0.01);
 }
 
-char get_type_image(int type){
-        if (type == 2 || type == 3) {
-            return 'x';
-        }
-        else {
-            return '=';
-        }
-}
+void the_time_pls(char  message[100], int time);
 
-void draw_grid() {
-    for (int column = 0; column < columns; column++) {
-        for (int row = 0; row < 3; row++) {
-            if (grid[column][row]) {
-                draw_block(column, row, get_type_image(grid[column][row]));
-            }
-        }
-    }
-}
-
-void make_column(int column) {
-    int rows = 3;
-    int block_type;
-    int safe_blocks;
-    do{
-        safe_blocks = 0;
-        for (int row = 0; row < rows ; row ++){
-            if (grid[column][row] != 3){
-                block_type  = rand() % 3;
-                if (block_type == 1){
-                    safe_blocks ++;
-                }
-                update_grid(column, row, block_type);
-            }
-        }
-    } while(safe_blocks < 0);
-}
-
-void draw_game(){
-    char time_message[100];
-    the_time_pls(time_message);
-    draw_line(0,5, screen_width()-1,5, '-');
-    draw_formatted( ( screen_width() - 10 ) * 1/5 , 2 , "n9989773" );
-    draw_formatted( ( screen_width() - 10 ) * 2/5 , 2 , "Score: %d",score );
-    draw_formatted( ( screen_width() - 10 ) * 3/5 , 2 ,  time_message);
-    draw_formatted( ( screen_width() - 10 ) * 4/5 , 2 , "Lives: %d", lives );
-    draw_grid();
-    sprite_draw(hero);
-    sprite_draw(treasure);
-}
-
-void setup( void ) {
-    //HUD Section =========================================================
-    columns = round(screen_width() / 9.0) ;
-    rows = 3;
-    score = 0;
-    lives = 10;
-    time = 0;
-    game_timer = create_timer(1000);
-    
-    int danger_x_1, danger_x_2, danger_y_1, danger_y_2;
-    danger_x_1 = rand()%columns;
-    danger_x_2 = rand()%columns;    
-    do {
-        danger_y_1 = rand()%3;
-        danger_y_2 = rand()%3;
-
-    } while (danger_y_1 == danger_y_2);
-
-    update_grid(danger_x_1, danger_y_1, 3);
-    update_grid(danger_x_2, danger_y_2, 3);
-    
-    for (int column = 0; column < columns; column ++){
-        make_column(column);
-    }
-    update_grid(0,0,1);
-    hero = sprite_create(0,0,4,3,hero_image);
-    treasure = sprite_create(0,0,5,2, treasure_image);
-    treasure_dx = 1;
-    treasure_timer = create_timer(500);
-    move_hero(0,0);
-    move_treasure(0,2);
-      
-}
-
-
-
-
-void block_checker() {
-    if (grid[hero_column][hero_row] == 1) score ++;
-    else if (grid[hero_column][hero_row] >= 2) {
-        lives --;
-        move_hero(0,0);
-    }
-
-    else {
-        hero_row ++;
-        move_hero(hero_column, hero_row);
-        block_checker();
-    }
-}
-
-void show_game_over() {
+void show_game_over( int score, int time ) {
     bool game_over_screen = true;
     char key;
     char time_message[100];
-    the_time_pls(time_message);
+    the_time_pls(time_message, time);
     clear_screen();
     draw_formatted((screen_width()-34)/2,screen_height()/2-1,"So long an thanks for all the fish");
     draw_formatted((screen_width()-34)/2,screen_height()/2+1,"Score: %d", score);
@@ -200,37 +159,172 @@ void show_game_over() {
     }
 }
 
-// Play one turn of game.
-void process( void ) {
+
+void controls(bool *treausre_stop, sprite_id *hero) {
     char key = get_char();
-    if ( key == 'a' && hero_column !=0 ){
-        move_hero(hero_column - 1, hero_row);
-        block_checker();
-    } else if ( key == 'd' && hero_column != columns-1 ){
-        move_hero(hero_column + 1, hero_row);
-        block_checker();
-    } else if ( key == 't' ){
-        treausre_stop = !treausre_stop;
+    if ( key == 'w') {
+        sprite_turn_to( *hero, sprite_dx(*hero ), -0.32);
+        sprite_step( *hero );
+    }
+    if ( key == 'a' ){
+        sprite_turn_to( *hero , sprite_dx(*hero) -0.1, sprite_dy(*hero) );
+    }  if ( key == 'd' ){
+        sprite_turn_to( *hero, sprite_dx(*hero) + 0.1, sprite_dy(*hero) );
+    }  if ( key == 't' ){
+        *treausre_stop = !*treausre_stop;
+    }
+
+    // DEBUGGING
+    else if ( key == 'y')  {
+        show_game_over(score, time);
     }
     
-    if (timer_expired(treasure_timer) && !treausre_stop) {
-        
-        move_treasure(treasure_column + treasure_dx, 2);
-        if (treasure_column == 0 || treasure_column == columns-1) treasure_dx = - treasure_dx;
-    }
-
-    if (treasure_column == hero_column && treasure_row == hero_row) {
-        lives += 2;
-        move_hero(0,0);
-    }
-
-    if (lives < 0 || key == 'y') {
-        show_game_over();
-    }
-    if (timer_expired(game_timer)) time ++;
-
-    draw_game();
 }
+
+void draw_grid( void );
+
+void draw_game( int score, int lives, int time, int columns, int rows, sprite_id hero, sprite_id treasure ){
+    char time_message[100];
+    the_time_pls(time_message, time);
+    draw_line(0,5, screen_width()-1,5, '-');
+    draw_formatted( ( screen_width() - 10 ) * 1/5 , 2 , "n9989773" );
+    draw_formatted( ( screen_width() - 10 ) * 2/5 , 2 , "Score: %d",score );
+    draw_formatted( ( screen_width() - 10 ) * 3/5 , 2 ,  time_message);
+    draw_formatted( ( screen_width() - 10 ) * 4/5 , 2 , "Lives: %d", lives );
+    draw_grid();
+    sprite_draw(hero);
+    sprite_draw(treasure);
+    show_screen();
+}
+
+
+void draw_grid( void ) {
+    for (int column = 0; column < columns; column ++ ) {
+        for (int row = 0; row < rows; row ++) {
+            sprite_draw(blocks[column][row].sprite);
+        }
+    }
+}
+
+
+
+bool get_horizontal_colide( sprite_id *hero, int columns, int rows ) {
+    int b;
+    bool vertical = false;
+    for ( int row = 0; row < rows; row ++) {
+        if ( round(sprite_y(blocks[0][row].sprite) ) > round(sprite_y( *hero ) - 2) &&
+             round(sprite_y(blocks[0][row].sprite)) < round(sprite_y( *hero ) + 3)) {
+                 vertical = true;
+                 b = row;
+        }
+    }
+    if ( vertical ){
+        int x = sprite_x( *hero );
+
+        for (int column = 0; column < columns; column ++) {
+            game_sprite block = blocks[column][b];
+            if ( x >= sprite_x(block.sprite) - 4 && 
+                x <= sprite_x(block.sprite) + sprite_width(block.sprite) - 2 &&
+                block.type != 0) {
+                return true;
+            } 
+        }
+    }
+    return false;
+}
+
+bool get_down_colide( sprite_id *hero, int columns, int row, bool airborn ) {
+    bool vertical = false;
+    
+    int b;
+    for ( int row = 0; row < rows; row ++) {
+        if ( round(sprite_y(blocks[0][row].sprite) - 3) == round(sprite_y( *hero ))) {
+            vertical = true;
+            b = row;
+        }
+    }
+    if ( vertical ){
+        int x = sprite_x( *hero );
+
+        for (int column = 0; column < columns; column ++) {
+            game_sprite block = blocks[column][b];
+            if ( x > sprite_x(block.sprite) - 4 && 
+                x < sprite_x(block.sprite) + sprite_width(block.sprite) - 1 &&
+                block.type != 0) {
+                    if (airborn) sprite_turn_to( *hero, 0, 0);
+                    return true;
+            } 
+        }
+    }
+
+    return false;
+}
+
+bool get_up_colide( sprite_id *hero, int columns, int row ) {
+    if ( sprite_dy( *hero ) >= 0 ) return false;
+    if ( sprite_y( *hero ) <= 6 ) return true;
+    bool vertical = false;
+    int b;
+    for ( int row = 0; row < rows; row ++) {
+        if ( round(sprite_y(blocks[0][row].sprite) +2) == round(sprite_y( *hero ))) {
+            vertical = true;
+            b = row;
+        }
+    }
+    if ( vertical ){
+        int x = sprite_x( *hero );
+
+        for (int column = 0; column < columns; column ++) {
+            game_sprite block = blocks[column][b];
+            if ( x > sprite_x(block.sprite) - 4 && 
+                x < sprite_x(block.sprite) + sprite_width(block.sprite) &&
+                block.type != 0) {
+                return true;
+            } 
+        }
+    }
+
+    return false;
+}
+
+void edge_detect( sprite_id * sprite ) {
+    if (sprite_x(*sprite) < 0 && sprite_dx(*sprite) < 0) sprite_turn_to(*sprite, 0, 0 );
+    else if (sprite_x(*sprite) > screen_width() - sprite_width(*sprite) - 2 && sprite_dx(*sprite) > 0) sprite_turn_to(*sprite, 0, 0 );
+
+    if (sprite_y(*sprite) > screen_height()) {
+        sprite_move_to( *sprite, 2, GAME_HEIGHT + 2 );
+        sprite_turn_to( *sprite, 0, 0);
+    }
+}
+
+void colision( sprite_id *hero, bool h, bool d, bool u ) {
+
+    edge_detect( hero );
+
+    if ( d || u ) sprite_turn_to(*hero, sprite_dx( *hero ), 0 );
+    if ( h ) sprite_turn_to( *hero, 0, sprite_dy( *hero ));
+}
+
+void process( void ){ // Call our setup function to initialise game state.
+    draw_game(score, lives, time, columns, rows, hero, treasure);
+    bool horizontal_colide, down_colide, up_colide;
+    horizontal_colide =  get_horizontal_colide( &hero, columns, rows );
+    down_colide = get_down_colide( &hero, columns, rows, false );
+    up_colide = get_up_colide( &hero, columns, rows );
+    colision( &hero, horizontal_colide, down_colide, up_colide );
+
+    if (!flying) gravity( &hero, down_colide );
+    if (!flying) controls( &treasure_stop, &hero );  
+    else fly( &hero);
+
+    sprite_step( hero );
+    sprite_step( treasure );
+
+    if (timer_expired(game_timer)) time ++;
+    if (lives < 0) show_game_over(score, time);
+}
+
+
 
 
 // Clean up at end of game.
@@ -242,13 +336,16 @@ void cleanup( void ) {
 int main( void ) {
     srand(get_current_time());
 	setup_screen();  // Call ZDK function to prepare screen.
-	setup();         // Call our setup function to initialise game state.
+	
+
+    
+    setup(); // Call our setup function to initialise game state.
 	show_screen();   // Display the screen at the start of play.
 
 	// Following block will repeat until game_over becomes true.
 	while ( ! game_over ) {
         clear_screen();
-		process();            // Execute one time step of game.
+		process(); // Call our setup function to initialise game state.            // Execute one time step of game.
 		show_screen();        // Show user the results.
 		timer_pause( DELAY ); // Let CPU rest a short time.
 	}
