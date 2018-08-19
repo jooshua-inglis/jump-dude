@@ -22,6 +22,10 @@ typedef struct {
 bool game_over = false;
 bool game_quit = false;
 
+void clear_input_buffer() {
+    while (get_char() >= 0) {}
+}
+
 // Defining game functions
 int columns() {
     return screen_width()/12;
@@ -79,7 +83,7 @@ int make_column( int column, game_sprite blocks[30][30] ) {
 void make_blocks( game_sprite blocks[30][30] )  {
     // Populates the blocks array with game_sprite structs to be used as the platforms
     // that the hero jumps on.
-
+    game_sprite blockos[30][30];
     int danger_blocks = 0;
     while (danger_blocks < 2) {
         for (int column = 0; column < columns(); column ++){
@@ -141,6 +145,7 @@ void respawn(sprite_id *hero, game_sprite blocks[30][30] ) {
     sprite_move_to( *hero, sprite_x(spawn_block.sprite) + 1 , vertical_height(0) - 3.5);
     sprite_turn_to( *hero, 0, 0);
     respawn_animation( hero );
+    clear_input_buffer();
 }
 
 
@@ -349,6 +354,7 @@ bool get_treasure_colide( int *lives, sprite_id *hero, sprite_id *treasure, game
 
             *lives += 2;
             respawn ( hero, blocks );
+            
             sprite_set_image( *treasure, treasure_closed );
         }
     return true;

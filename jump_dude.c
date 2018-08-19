@@ -14,7 +14,7 @@ void setup(
     *time = 0;
     *treasure_stop = false;
     *hero = sprite_create( 2, vertical_height(0) - 3.5 , 3, 3, hero_stat);
-    *treasure = sprite_create( 2,vertical_height(rows()-1) -3,5,3, treasure_closed);
+    *treasure = sprite_create( 2,vertical_height(rows()-1) -3,3,3, treasure_closed);
     *treasure_timer = create_timer(500);
     *game_timer = create_timer(1000);
     make_blocks( blocks );
@@ -39,7 +39,8 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
         colision( &hero, &lives, &score, &air_born, &down_colide, blocks, &colided_block, &prev_colided );
         treasure_edge_detect( &treasure );
         gravity( &hero, down_colide );
-        if ( !air_born ) controls( &treasure_stop, &hero, &air_born, colided_block );  
+        if ( !air_born ) controls( &treasure_stop, &hero, &air_born, colided_block );
+        else clear_input_buffer(); 
         sprite_step( hero );
         sprite_step( treasure );
         blocks_step(blocks);

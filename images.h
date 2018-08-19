@@ -16,13 +16,13 @@ char * hero_falling = "\\0/"
                       "/ \\";
 
 
-char * treasure_closed = "     "
-                         "##T##"
-                         "#####";
+char * treasure_closed = "   "
+                         "#T#"
+                         "###";
 
-char * treasure_open = "##T##"
-                       " +2  "
-                       "#####";
+char * treasure_open = "#T#"
+                       "+2 "
+                       "###";
 
 char * safe_block = "=========="
                     "==========";
