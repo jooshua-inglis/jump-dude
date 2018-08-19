@@ -26,7 +26,9 @@ char * treasure_open = "##T##"
 
 char * safe_block = "=========="
                     "==========";
+
 char * danger_block = "xxxxxxxxxx"
                       "xxxxxxxxxx";
+                      
 char * no_block = "          "
                   "          ";

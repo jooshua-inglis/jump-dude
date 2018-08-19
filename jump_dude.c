@@ -32,27 +32,20 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
     while ( !game_over ) {
         clear_screen();
 
-        bool horizontal_colide, down_colide, up_colide;
-        draw_game(score, lives, time, hero, treasure, blocks);
+        bool down_colide;
         game_sprite colided_block;
-        horizontal_colide = get_horizontal_colide( &hero, blocks );
-        down_colide = get_down_colide( &hero, &colided_block, blocks, &air_born );
-        up_colide = get_up_colide( &hero, blocks);
+        draw_game(score, lives, time, hero, treasure, blocks);
         get_treasure_colide( &lives, &hero, &treasure , blocks);
-        colision( &hero, &lives, &score, horizontal_colide, down_colide, up_colide, &air_born,blocks , colided_block, &prev_colided );
+        colision( &hero, &lives, &score, &air_born, &down_colide, blocks, &colided_block, &prev_colided );
         treasure_edge_detect( &treasure );
-
-        if (!flying) gravity( &hero, down_colide );
-        if (!flying && !air_born ) controls( &treasure_stop, &hero, &air_born, colided_block );  
-        else fly( &hero);
-
+        gravity( &hero, down_colide );
+        if ( !air_born ) controls( &treasure_stop, &hero, &air_born, colided_block );  
         sprite_step( hero );
         sprite_step( treasure );
         blocks_step(blocks);
 
         if (timer_expired(game_timer)) time ++;
         if (lives < 0) show_game_over(score, time);
-
 
         show_screen();       
         timer_pause( DELAY ); 
@@ -70,6 +63,7 @@ int main( void ) {
     game_sprite blocks[30][30];
 
     while ( !game_quit ){
+        game_over = false;
         setup( 
             &treasure_stop, &air_born, &score, &lives,
             &time, &treasure_timer, &game_timer, &hero,
