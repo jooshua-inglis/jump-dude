@@ -12,7 +12,8 @@
 
 
 //Defining the structs
-typedef struct {
+typedef struct game_sprite
+{
     sprite_id sprite;
     int type;
 } game_sprite;
@@ -83,7 +84,6 @@ int make_column( int column, game_sprite blocks[30][30] ) {
 void make_blocks( game_sprite blocks[30][30] )  {
     // Populates the blocks array with game_sprite structs to be used as the platforms
     // that the hero jumps on.
-    game_sprite blockos[30][30];
     int danger_blocks = 0;
     while (danger_blocks < 2) {
         for (int column = 0; column < columns(); column ++){
