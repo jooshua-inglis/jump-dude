@@ -109,24 +109,24 @@ void accelerate_blocks( game_sprite blocks[30][30] ) {
     }
 }
 
-void respawn_animation( sprite_id *hero) {
+void respawn_animation( sprite_id hero ) {
         
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 3, "/ \\");
+    draw_string(sprite_x(hero), sprite_y(hero) + 3, "/ \\");
     show_screen();
     timer_pause(100);
     
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 2, "[|]");
+    draw_string(sprite_x(hero), sprite_y(hero) + 2, "[|]");
     show_screen();
     timer_pause(100);
     
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 1, " 0 ");
+    draw_string(sprite_x(hero), sprite_y(hero) + 1, " 0 ");
     show_screen();
     timer_pause(100);
 
 }
 
 
-void respawn(sprite_id *hero, game_sprite blocks[30][30] ) {
+void respawn(sprite_id hero, game_sprite blocks[30][30] ) {
     int spawn_column;
     game_sprite spawn_block;
 
@@ -135,15 +135,15 @@ void respawn(sprite_id *hero, game_sprite blocks[30][30] ) {
         spawn_block = blocks[spawn_column][0];
     } while (spawn_block.type != 1);
 
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 0, "   ");
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 1, "   ");
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 2, "   ");
-    draw_string(sprite_x(*hero), sprite_y(*hero) + 3, "   ");
+    draw_string(sprite_x(hero), sprite_y(hero) + 0, "   ");
+    draw_string(sprite_x(hero), sprite_y(hero) + 1, "   ");
+    draw_string(sprite_x(hero), sprite_y(hero) + 2, "   ");
+    draw_string(sprite_x(hero), sprite_y(hero) + 3, "   ");
     show_screen();
 
     timer_pause(150);
-    sprite_move_to( *hero, sprite_x(spawn_block.sprite) + 1 , vertical_height(0) - 3.5);
-    sprite_turn_to( *hero, 0, 0);
+    sprite_move_to( hero, sprite_x(spawn_block.sprite) + 1 , vertical_height(0) - 3.5);
+    sprite_turn_to( hero, 0, 0 );
     respawn_animation( hero );
     clear_input_buffer();
 }
@@ -162,9 +162,9 @@ void the_time_pls(char message[100], int time) {
 }
 
 
-void gravity( sprite_id *hero, bool on_block) {
-    if (on_block) sprite_turn_to( *hero, sprite_dx( *hero ), 0 );
-    else sprite_turn_to( *hero, sprite_dx( *hero ), sprite_dy( *hero ) + 0.01);
+void gravity( sprite_id hero, bool on_block) {
+    if (on_block) sprite_turn_to( hero, sprite_dx( hero ), 0 );
+    else sprite_turn_to( hero, sprite_dx( hero ), sprite_dy( hero ) + 0.01);
 }
 
 void wait_for_responce(){
@@ -196,24 +196,24 @@ void show_game_over( int score, int time ) {
     wait_for_responce();
 }
 
-void face_direction( sprite_id *hero, game_sprite colided_block ) {
-    if (round(sprite_dx( *hero)) == 0) sprite_set_image( *hero, hero_stat);
-    if ( sprite_dx( *hero ) - sprite_dx( colided_block.sprite ) > 0) sprite_set_image( *hero, hero_right );
-    else if (sprite_dx( *hero ) - sprite_dx( colided_block.sprite ) < 0) sprite_set_image( *hero, hero_left );
+void face_direction( sprite_id hero, game_sprite colided_block ) {
+    if (round(sprite_dx( hero)) == 0) sprite_set_image( hero, hero_stat);
+    if ( sprite_dx( hero ) - sprite_dx( colided_block.sprite ) > 0) sprite_set_image( hero, hero_right );
+    else if (sprite_dx( hero ) - sprite_dx( colided_block.sprite ) < 0) sprite_set_image( hero, hero_left );
 }
 
 
-void controls(bool *treausre_stop, sprite_id *hero, bool *air_born, game_sprite colided_block) {
+void controls(bool *treausre_stop, sprite_id hero, bool *air_born, game_sprite colided_block) {
     char key = 0;
     key = get_char();
     if ( key == 'w') {
-        sprite_turn_to( *hero, sprite_dx(*hero ), -0.32);
-        sprite_step( *hero );
+        sprite_turn_to( hero, sprite_dx(hero ), -0.32);
+        sprite_step( hero );
     }
     if ( key == 'a' ){
-        sprite_turn_to( *hero , sprite_dx(*hero) -0.2, sprite_dy(*hero) );
+        sprite_turn_to( hero , sprite_dx(hero) -0.2, sprite_dy(hero) );
     }  if ( key == 'd' ){
-        sprite_turn_to( *hero, sprite_dx(*hero) + 0.2, sprite_dy(*hero) );
+        sprite_turn_to( hero, sprite_dx(hero) + 0.2, sprite_dy(hero) );
     }  if ( key == 't' ){
         *treausre_stop = !*treausre_stop;
     }
@@ -251,18 +251,18 @@ void draw_game( int score, int lives, int time, sprite_id hero, sprite_id treasu
 
 
 
-bool get_horizontal_colide( sprite_id *hero, game_sprite blocks[30][30] ) {
+bool get_horizontal_colide( sprite_id hero, game_sprite blocks[30][30] ) {
     int b;
     bool vertical = false;
     for ( int row = 0; row < rows(); row ++) {
-        if ( round(sprite_y(blocks[0][row].sprite) ) > round(sprite_y( *hero ) - 2) &&
-             round(sprite_y(blocks[0][row].sprite)) < round(sprite_y( *hero ) + 3)) {
+        if ( round(sprite_y(blocks[0][row].sprite) ) > round(sprite_y( hero ) - 2) &&
+             round(sprite_y(blocks[0][row].sprite)) < round(sprite_y( hero ) + 3)) {
                  vertical = true;
                  b = row;
         }
     }
     if ( vertical ){
-        int x = sprite_x( *hero );
+        int x = sprite_x( hero );
 
         for (int column = 0; column < columns(); column ++) {
             game_sprite block = blocks[column][b];
@@ -277,17 +277,17 @@ bool get_horizontal_colide( sprite_id *hero, game_sprite blocks[30][30] ) {
 }
 
 
-bool get_down_colide( sprite_id *hero, game_sprite *colided_block, game_sprite blocks[30][30], bool *air_born ) {
+bool get_down_colide( sprite_id hero, game_sprite *colided_block, game_sprite blocks[30][30], bool *air_born ) {
     bool vertical = false;
     int b;
     for ( int row = 0; row < rows(); row ++) {
-        if ( round(sprite_y(blocks[0][row].sprite) - 3) == round(sprite_y( *hero ))) {
+        if ( round(sprite_y(blocks[0][row].sprite) - 3) == round(sprite_y( hero ))) {
             vertical = true;
             b = row;
         }
     }
     if ( vertical ){
-        int x = sprite_x( *hero );
+        int x = sprite_x( hero );
 
         for (int column = 0; column < columns(); column ++) {
             game_sprite block = blocks[column][b];
@@ -301,26 +301,26 @@ bool get_down_colide( sprite_id *hero, game_sprite *colided_block, game_sprite b
     }
     if (!*air_born){
         *air_born = true;
-        sprite_set_image ( *hero, hero_falling );
+        sprite_set_image ( hero, hero_falling );
     }
 
     return false;
 }
 
 
-bool get_up_colide( sprite_id *hero, game_sprite blocks[30][30] ) {
-    if ( sprite_dy( *hero ) >= 0 ) return false;
-    if ( sprite_y( *hero ) <= 6 ) return true;
+bool get_up_colide( sprite_id hero, game_sprite blocks[30][30] ) {
+    if ( sprite_dy( hero ) >= 0 ) return false;
+    if ( sprite_y( hero ) <= 6 ) return true;
     bool vertical = false;
     int b;
     for ( int row = 0; row < rows(); row ++) {
-        if ( round(sprite_y(blocks[0][row].sprite) +2) == round(sprite_y( *hero ))) {
+        if ( round(sprite_y(blocks[0][row].sprite) +2) == round(sprite_y( hero ))) {
             vertical = true;
             b = row;
         }
     }
     if ( vertical ){
-        int x = sprite_x( *hero );
+        int x = sprite_x( hero );
 
         for (int column = 0; column < columns(); column ++) {
             game_sprite block = blocks[column][b];
@@ -338,60 +338,60 @@ bool get_up_colide( sprite_id *hero, game_sprite blocks[30][30] ) {
 
 
 
-bool get_treasure_colide( int *lives, sprite_id *hero, sprite_id *treasure, game_sprite blocks[30][30]) {
+bool get_treasure_colide( int *lives, sprite_id hero, sprite_id treasure, game_sprite blocks[30][30]) {
     if ( 
-        sprite_x( *hero ) < sprite_x( *treasure ) + sprite_width( *treasure ) &&
-        sprite_x( *hero ) + sprite_width( *hero ) > sprite_x( *treasure )  &&
-        round(sprite_y( *hero )) == round(sprite_y( *treasure ))) {
-            sprite_set_image( *treasure, treasure_open );
-            draw_string(sprite_x(*treasure), sprite_y(*treasure) + 0, "      ");
-            draw_string(sprite_x(*treasure), sprite_y(*treasure) + 1, "      ");
-            draw_string(sprite_x(*treasure), sprite_y(*treasure) + 2, "      ");
+        sprite_x( hero ) < sprite_x( treasure ) + sprite_width( treasure ) &&
+        sprite_x( hero ) + sprite_width( hero ) > sprite_x( treasure )  &&
+        round(sprite_y( hero )) == round(sprite_y( treasure ))) {
+            sprite_set_image( treasure, treasure_open );
+            draw_string(sprite_x(treasure), sprite_y(treasure) + 0, "      ");
+            draw_string(sprite_x(treasure), sprite_y(treasure) + 1, "      ");
+            draw_string(sprite_x(treasure), sprite_y(treasure) + 2, "      ");
 
-            sprite_draw(*treasure);
+            sprite_draw(treasure);
             show_screen();
             timer_pause( 1000 );
 
             *lives += 2;
             respawn ( hero, blocks );
             
-            sprite_set_image( *treasure, treasure_closed );
+            sprite_set_image( treasure, treasure_closed );
         }
     return true;
 }
 
 
-void edge_detect( int *lives, sprite_id * sprite, game_sprite blocks[30][30] ) {
-    if ((sprite_x(*sprite) < - 3 && sprite_dx(*sprite) < 0) ||
-        (sprite_x(*sprite) > screen_width() - sprite_width(*sprite) + 1 && sprite_dx(*sprite) > 0) ||
-        sprite_y(*sprite) > screen_height() ){
+void edge_detect( int *lives, sprite_id sprite, game_sprite blocks[30][30] ) {
+    if ((sprite_x(sprite) < - 3 && sprite_dx(sprite) < 0) ||
+        (sprite_x(sprite) > screen_width() - sprite_width(sprite) + 1 && sprite_dx(sprite) > 0) ||
+        sprite_y(sprite) > screen_height() ){
 
         *lives -= 1;
         respawn( sprite, blocks );
     }
 }
 
-void treasure_edge_detect( sprite_id *treasure ) {
+void treasure_edge_detect( sprite_id treasure ) {
     if ( 
-        sprite_x(*treasure) < 0 ||
-        sprite_x(*treasure) > screen_width() - sprite_width(*treasure) - 2
-        ) sprite_turn_to( *treasure, -sprite_dx( *treasure ), 0);
+        sprite_x(treasure) < 0 ||
+        sprite_x(treasure) > screen_width() - sprite_width(treasure) - 2
+        ) sprite_turn_to( treasure, -sprite_dx( treasure ), 0);
 }
 
 void blocks_step( game_sprite blocks[30][30]) {
     for (int column = 0; column < columns(); column ++) {
         for ( int row = 1; row < rows() -1; row ++) {
-            sprite_id *sprite = &blocks[column][row].sprite;
-            if (sprite_x(*sprite) < - 8) { sprite_move_to( *sprite, screen_width(), sprite_y(*sprite));}
-            else if (sprite_x(*sprite) > screen_width()) { sprite_move_to( *sprite, -8 , sprite_y(*sprite));}
-            sprite_step(*sprite);
+            sprite_id sprite = blocks[column][row].sprite;
+            if (sprite_x(sprite) < - 8) { sprite_move_to( sprite, screen_width(), sprite_y(sprite));}
+            else if (sprite_x(sprite) > screen_width()) { sprite_move_to( sprite, -8 , sprite_y(sprite));}
+            sprite_step(sprite);
         }
     }
 }
 
 
 
-void colision( sprite_id *hero, int *lives, int *score, bool *air_born, bool *down_colide, game_sprite blocks[30][30], game_sprite *colided_block, sprite_id *prev_colided ) {
+void colision( sprite_id hero, int *lives, int *score, bool *air_born, bool *down_colide, game_sprite blocks[30][30], game_sprite *colided_block, sprite_id *prev_colided ) {
     edge_detect( lives, hero, blocks );
 
     bool horizontal_colide = get_horizontal_colide( hero, blocks );
@@ -405,25 +405,25 @@ void colision( sprite_id *hero, int *lives, int *score, bool *air_born, bool *do
            *lives -= 1;
             respawn( hero, blocks);            
         } else {
-            sprite_turn_to(*hero, sprite_dx( *hero ), 0 );
+            sprite_turn_to(hero, sprite_dx( hero ), 0 );
             if (*air_born) {
                 if (!sprites_equal(colided_block_.sprite, *prev_colided)) *score += 1;
                 
-                sprite_turn_to( *hero, sprite_dx(colided_block_.sprite), 0 );
+                sprite_turn_to( hero, sprite_dx(colided_block_.sprite), 0 );
                 *air_born = false;
                 *prev_colided = colided_block_.sprite;
             }
         }
     }
 
-    if ( up_colide ) sprite_turn_to(*hero, sprite_dx( *hero ), 0 );
-    if ( horizontal_colide ) sprite_turn_to( *hero, sprite_dx( colided_block_.sprite ), sprite_dy( *hero ));
+    if ( up_colide ) sprite_turn_to(hero, sprite_dx( hero ), 0 );
+    if ( horizontal_colide ) sprite_turn_to( hero, sprite_dx( colided_block_.sprite ), sprite_dy( hero ));
 }
 
 
-void cleanup( sprite_id *hero, sprite_id *treasure, game_sprite blocks[30][30], timer_id *game_timer, timer_id *treasure_timer ) {
-    sprite_destroy( *hero );
-    sprite_destroy( *treasure );
+void cleanup( sprite_id hero, sprite_id treasure, game_sprite blocks[30][30], timer_id *game_timer, timer_id *treasure_timer ) {
+    sprite_destroy( hero );
+    sprite_destroy( treasure );
     for (int c = 0; c < columns(); c++){
         for (int r = 0; r < rows(); r++){
             sprite_destroy( blocks[c][r].sprite );
