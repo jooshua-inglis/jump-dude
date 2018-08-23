@@ -13,8 +13,8 @@ void setup(
     *lives = 10;
     *time = 0;
     *treasure_stop = false;
-    *hero = sprite_create( 2, vertical_height(0) - 3.5 , 3, 3, hero_stat);
-    *treasure = sprite_create( 2,vertical_height(rows()-1) -3,3,3, treasure_closed);
+    *hero = sprite_create( 2, row_height(0) - 3.5 , 3, 3, hero_stat);
+    *treasure = sprite_create( 2,row_height(rows()-1) -3,3,3, treasure_closed);
     *treasure_timer = create_timer(500);
     *game_timer = create_timer(1000);
     make_blocks( blocks );
@@ -30,11 +30,11 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
             game_sprite blocks[30][30] ){ 
 
     while ( !game_over ) {
-        clear_screen();
+        
         bool down_colide;
         game_sprite colided_block;
 
-        colision( hero, treasure, &lives, &score, &air_born, &down_colide, blocks, &colided_block, &prev_colided );
+        colision( hero, treasure, &lives, &score, &air_born, &down_colide, blocks, &colided_block );
         edge_detect( hero, treasure, blocks, &lives );
         gravity( hero, down_colide );
         if ( !air_born ) controls( &treasure_stop, hero, &air_born, colided_block );
@@ -46,8 +46,7 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
         if (timer_expired(game_timer)) time ++;
         if (lives < 0) show_game_over(score, time);
 
-        draw_game(score, lives, time, hero, treasure, blocks);
-        show_screen();       
+        draw_game(score, lives, time, hero, treasure, blocks);   
         timer_pause( DELAY ); 
 	}
 }
