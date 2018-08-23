@@ -31,13 +31,11 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
 
     while ( !game_over ) {
         clear_screen();
-
         bool down_colide;
         game_sprite colided_block;
-        draw_game(score, lives, time, hero, treasure, blocks);
-        get_treasure_colide( &lives, hero, treasure , blocks);
-        colision( hero, &lives, &score, &air_born, &down_colide, blocks, &colided_block, &prev_colided );
-        treasure_edge_detect( treasure );
+
+        colision( hero, treasure, &lives, &score, &air_born, &down_colide, blocks, &colided_block, &prev_colided );
+        edge_detect( hero, treasure, blocks, &lives );
         gravity( hero, down_colide );
         if ( !air_born ) controls( &treasure_stop, hero, &air_born, colided_block );
         else clear_input_buffer(); 
@@ -48,6 +46,7 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
         if (timer_expired(game_timer)) time ++;
         if (lives < 0) show_game_over(score, time);
 
+        draw_game(score, lives, time, hero, treasure, blocks);
         show_screen();       
         timer_pause( DELAY ); 
 	}
@@ -81,4 +80,3 @@ int main( void ) {
     }
 	return 0;
 }
-
