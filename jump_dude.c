@@ -38,9 +38,12 @@ void process( bool treasure_stop, bool air_born, int score, int lives,
         edge_detect( hero, treasure, blocks, &lives );
         gravity( hero, down_colide );
         if ( !air_born ) controls( &treasure_stop, hero, &air_born, colided_block );
-        else clear_input_buffer(); 
+        else  {
+            sprite_set_image( hero, hero_falling);
+            clear_input_buffer(); 
+            }
         sprite_step( hero );
-        sprite_step( treasure );
+        if (!treasure_stop) sprite_step( treasure );
         blocks_step( blocks);
 
         if (timer_expired(game_timer)) time ++;

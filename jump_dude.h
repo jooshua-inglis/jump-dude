@@ -55,16 +55,21 @@ int row_height( int row ){
 }
 
 
-int make_column( int column, game_sprite blocks[30][30] ) {
+void make_column( int column, int *safe_blocks, int *danger_blocks, game_sprite blocks[30][30] ) {
     // Function to create an individual column, return the number of danger blocks created in the column
-    int block_type, safe_blocks, x, width, danger_blocks = 0;
+    int block_type, row_safe_blocks, x, width, danger_blocks = 0;
     do {
-        safe_blocks = 0;
+        row_safe_blocks = 0;
         for (int row = 0; row < rows() ; row ++){
-            block_type = rand() % 3;
+            if (danger_blocks > 40) {
+                if (safe_blocks > 160) return danger_blocks;
+                block_type = 1;
+            }
+            else if (safe_blocks > 160) block_type = 2;
+            else block_type = rand() % 3;
             width = rand() % 6 + 5;
 
-            if (block_type == 1) safe_blocks ++;
+            if (block_type == 1) row_safe_blocks ++;
             else if (block_type == 2) danger_blocks ++;
             if (column == 0) x = 0;
             else x = 1 +  sprite_x(blocks[column-1][row].sprite) + sprite_width(blocks[column-1][row].sprite);
@@ -72,19 +77,18 @@ int make_column( int column, game_sprite blocks[30][30] ) {
             blocks[column][row].type = block_type;
             blocks[column][row].sprite = sprite_create( x, row_height(row), width, 2, get_type_image(block_type));
         }
-    } while(safe_blocks < 1);
-    return danger_blocks;
+    } while(row_safe_blocks < 1);
+    safe_blocks += row_safe_blocks;
 }
 
 
 void make_blocks( game_sprite blocks[30][30] )  {
     // Populates the blocks array with game_sprite structs to be used as the platforms
     // that the hero jumps on.
-    int danger_blocks = 0;
+    int danger_blocks = 0, safe_blocks = 0;
     while (danger_blocks < 2) {
         for (int column = 0; column < columns(); column ++){
-            danger_blocks += make_column( column, blocks );
-            danger_blocks = 3;
+            make_column( column, &safe_blocks, &danger_blocks, blocks );
         }
     }
     sprite_set_image ( blocks[0][0].sprite , "sssssssssss" "sssssssssss");
@@ -93,12 +97,11 @@ void make_blocks( game_sprite blocks[30][30] )  {
 
 
 void accelerate_blocks( game_sprite blocks[30][30] ) {
-    int direction; 
+    int direction = 2 * ( rand() % 2 ) - 1;; 
     double speed;
-    for ( int row = 1; row < rows() -1; row ++)
-     {
-        direction = 2 * ( rand() % 2 ) - 1; // randomly returns 1 or -1.
+    for ( int row = 1; row < rows() -1; row ++) {
         speed = ( rand() % 3 + 1 )/10.0;
+        direction *= -1;
         for (int column = 0; column < columns(); column ++) {
             sprite_turn_to(blocks[column][row].sprite, direction * speed, 0); //debug
         }
@@ -106,7 +109,6 @@ void accelerate_blocks( game_sprite blocks[30][30] ) {
 }
 
 void respawn_animation( sprite_id hero ) {
-     
     draw_string(hero->x, hero->y + 3, "/ \\");
     show_screen();
     timer_pause(100);
@@ -306,11 +308,12 @@ void treasure_colide( int *lives, sprite_id hero, sprite_id treasure, game_sprit
     sprite_draw(treasure);
     show_screen();
     timer_pause( 1000 );
-
+    sprite_hide(treasure);
+    sprite_move_to(treasure,0,0);
     *lives += 2;
     respawn ( hero, blocks );
     
-    sprite_set_image( treasure, treasure_closed );
+    
 }
 
 
