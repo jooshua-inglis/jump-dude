@@ -5,7 +5,7 @@ void setup(
             bool *treasure_stop, bool *air_born, int *score, int *lives,
             int *time, timer_id *treasure_timer, timer_id *game_timer, 
             sprite_id *hero, sprite_id *treasure, sprite_id *prev_colided,
-            game_sprite blocks[20][10]
+            game_sprite blocks[50][10]
             ) {
     // Calls all the functions needed to set up the game and set the global variables. 
     *air_born = false;
@@ -62,7 +62,7 @@ int main( void ) {
     int score, lives, time;
     timer_id treasure_timer, game_timer;
     sprite_id hero, treasure, prev_colided;
-    game_sprite blocks[20][10];
+    game_sprite blocks[50][10];
 
     while ( !game_quit ){
         game_over = false;
