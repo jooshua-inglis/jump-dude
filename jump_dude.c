@@ -5,7 +5,7 @@ void setup(
             bool *treasure_stop, bool *air_born, int *score, int *lives,
             int *time, timer_id *treasure_timer, timer_id *game_timer, 
             sprite_id *hero, sprite_id *treasure, sprite_id *prev_colided,
-            game_sprite blocks[30][30]
+            game_sprite blocks[20][10]
             ) {
     // Calls all the functions needed to set up the game and set the global variables. 
     *air_born = false;
@@ -17,8 +17,8 @@ void setup(
     *treasure = sprite_create( 2,row_height(rows()-1) -3,3,3, treasure_closed);
     *treasure_timer = create_timer(500);
     *game_timer = create_timer(1000);
-    make_blocks( blocks );
-    accelerate_blocks( blocks );
+    make_blocks( blocks, columns(), rows() );
+    accelerate_blocks( blocks, rows(), columns() );
     sprite_turn_to( *treasure, 0.2, 0 );
     *prev_colided = blocks[0][0].sprite;
 }
@@ -27,7 +27,7 @@ void setup(
 void process( bool treasure_stop, bool air_born, int score, int lives,
             int time, timer_id treasure_timer, timer_id game_timer,
             sprite_id hero, sprite_id treasure, sprite_id prev_colided,
-            game_sprite blocks[30][30] ){ 
+            game_sprite blocks[20][10] ){ 
 
     while ( !game_over ) {
         
@@ -62,7 +62,7 @@ int main( void ) {
     int score, lives, time;
     timer_id treasure_timer, game_timer;
     sprite_id hero, treasure, prev_colided;
-    game_sprite blocks[30][30];
+    game_sprite blocks[20][10];
 
     while ( !game_quit ){
         game_over = false;
