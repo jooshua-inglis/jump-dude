@@ -317,47 +317,51 @@ void treasure_colide( int *lives, sprite_id hero, sprite_id treasure, game_sprit
     respawn ( hero, blocks );    
 }
 
-
-void colision( sprite_id hero, sprite_id treasure,  int *lives, int *score, bool *air_born, bool *down_colide, game_sprite blocks[20][10], game_sprite *colided_block ) {
-    bool up_colide = false;
-    bool horizontal_colide = false;
-    static sprite_id prev_colided;
-    *down_colide = false;
-
-    if (to_the_side(treasure, hero)) treasure_colide ( lives, hero, treasure, blocks );
-
+game_sprite get_colides(bool *down_colide, bool *up_colide, bool *horizontal_colide, sprite_id hero, game_sprite blocks[20][10]) {
     for (int c = 0; c < columns(); c++) { for (int r = 0; r < rows(); r++) {
         if (on_top_of( hero, blocks[c][r].sprite, -1 ) && blocks[c][r].type != 0 ){
             *down_colide = true;
-            *colided_block = blocks[c][r];
+            return blocks[c][r];
         }
         if ( ( top_detect( hero, 0 ) || on_top_of( blocks[c][r].sprite, hero, -1 ) )  && blocks[c][r].type != 0 && hero->dy < 0 ) {
-            up_colide = true;
-            *colided_block = blocks[c][r];
+            *up_colide = true;
+            return blocks[c][r];
             }
 
         if ( to_the_side( hero, blocks[c][r].sprite ) && blocks[c][r].type != 0 ){
-            horizontal_colide = true;
-            *colided_block = blocks[c][r];
+            *horizontal_colide = true;
+            return blocks[c][r];
             }
     }}
-    if (!*down_colide) *air_born = true;
+    return blocks[0][0];
+}
 
+sprite_id land(int *score, sprite_id hero, sprite_id prev_colided, game_sprite *colided_block) {
+    if (!sprites_equal(colided_block->sprite, prev_colided)) *score += 1;
+    hero->dx = colided_block->sprite->dx;
+    return colided_block->sprite;
+
+}
+
+
+void colision( sprite_id hero, sprite_id treasure,  int *lives, int *score, bool *air_born, bool *down_colide, game_sprite blocks[20][10], game_sprite *colided_block ) {
+    bool up_colide = false, horizontal_colide = false;
+    static sprite_id prev_colided;
+    *down_colide = false;
+    *colided_block = get_colides(down_colide, &up_colide, &horizontal_colide, hero, blocks);
     if ( *down_colide ) {
         if (colided_block->type == 2) {
            *lives -= 1;
-            respawn( hero, blocks);            
+            respawn( hero, blocks );            
         } else {
             hero->dy = 0;
             if (*air_born) {
-                if (!sprites_equal(colided_block->sprite, prev_colided)) *score += 1;
-                hero->dx = colided_block->sprite->dx;
+                prev_colided = land(score, hero, prev_colided, colided_block);
                 *air_born = false;
-                prev_colided = colided_block->sprite;
             }
         }
-    }
-
+    } else *air_born = true;
+    if (to_the_side(treasure, hero)) treasure_colide ( lives, hero, treasure, blocks );
     if ( up_colide ) hero->dy = 0;
     if ( horizontal_colide ) hero->dx = colided_block->sprite->dx;
 }
