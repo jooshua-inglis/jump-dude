@@ -7,7 +7,7 @@
 
 #define DELAY (10) 
 #define GAME_HEIGHT (6)
-#define BLOCK_SPACING (2)
+#define MAX_WIDTH (10)
 
 
 //Defining the structs
@@ -28,8 +28,8 @@ void clear_input_buffer() {
 
 // Defining game functions
 int columns() {
-    if (screen_width()/11 < 30) return screen_width()/11;
-    else return 30;
+    if (screen_width()/(MAX_WIDTH + 1) < 50) return screen_width()/11;
+    else return 50;
 }
 
 
@@ -111,7 +111,7 @@ void accelerate_blocks( game_sprite blocks[50][10], int rows, int columns ) {
     direction = 2;
     double speed;
     for ( int row = 1; row < rows -1; row ++) {
-        speed = ( rand() % 3 + 1 )/10.0;
+        speed = ( rand() % 2 + 1 )/10.0;
         direction *= -1;
         for (int column = 0; column < columns; column ++) {
             sprite_turn_to(blocks[column][row].sprite, direction * speed, 0); //debug
@@ -214,19 +214,13 @@ void controls(bool *treausre_stop, sprite_id hero, bool *air_born, game_sprite c
     char key = 0;
     key = get_char();
     if ( key == 'w') {
-        sprite_turn_to( hero, sprite_dx(hero), -0.32);
+        hero->dy = -0.32;
         sprite_step( hero );
     }
-    if ( key == 'a' ){
-        sprite_turn_to( hero , sprite_dx(hero) -0.2, sprite_dy(hero) );
-    }  if ( key == 'd' ){
-        sprite_turn_to( hero, sprite_dx(hero) + 0.2, sprite_dy(hero) );
-    }  if ( key == 't' ){
-        *treausre_stop = !*treausre_stop;
-    }
-    if ( key ) {
-        face_direction( hero, colided_block );
-    }  
+    if ( key == 'a' && hero ->dx - colided_block.sprite->dx > -0.2)  hero->dx -= 0.5;
+    if ( key == 'd' && hero->dx  - colided_block.sprite->dx < 0.2 )  hero->dx += 0.5;
+    if ( key == 't' ) *treausre_stop = !*treausre_stop;
+    if ( key ) face_direction( hero, colided_block );
 }
 
 void draw_grid( game_sprite blocks[50][10] ) {
@@ -262,7 +256,7 @@ bool top_detect ( sprite_id sprite, int offset ) {
 }
 
 bool bottom_detect( sprite_id sprite, int offset ) {
-    return sprite->y + sprite->height > screen_width() + offset;
+    return sprite->y + sprite->height > screen_height() + offset;
 }
 
 void edge_detect( sprite_id hero, sprite_id treasure, game_sprite blocks[50][10], int *lives ) {
