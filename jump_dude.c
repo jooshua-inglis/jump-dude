@@ -14,7 +14,7 @@ void setup(
     *time = 0;
     *treasure_stop = false;
     *hero = sprite_create( 2, row_height(0) - 3.5 , 3, 3, hero_stat);
-    *treasure = sprite_create( 2,row_height(rows()-1) -3,3,3, treasure_closed);
+    *treasure = sprite_create( 2,row_height(rows()-1) +2,3,3, treasure_closed);
     *treasure_timer = create_timer(500);
     *game_timer = create_timer(1000);
     make_blocks( blocks, columns(), rows() );
