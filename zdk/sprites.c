@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "cab202_graphics.h"
-#include "cab202_sprites.h"
+#include "graphics.h"
+#include "sprites.h"
 #include "curses.h"
 
 /*

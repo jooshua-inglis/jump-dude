@@ -17,8 +17,8 @@
 #include <signal.h>
 #include <curses.h>
 #include <assert.h>
-#include "cab202_graphics.h"
-#include "cab202_timers.h"
+#include "graphics.h"
+#include "timers.h"
 
 #define ABS(x)	 (((x) >= 0) ? (x) : -(x))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))

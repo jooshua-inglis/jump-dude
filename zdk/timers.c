@@ -9,7 +9,7 @@
  *	$Revision:Sun Jul 24 19:36:39 EAST 2016$
  */
 
-#include "cab202_timers.h"
+#include "timers.h"
 #include <assert.h>
 #include <stdlib.h>
 
