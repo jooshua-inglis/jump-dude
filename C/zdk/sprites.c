@@ -159,6 +159,7 @@ void sprite_turn_to( sprite_id sprite, double dx, double dy ) {
  *		degrees: The angle to turn, measured in degrees.
  */
 void sprite_turn( sprite_id sprite, double degrees ) {
+	
 	double radians = degrees * M_PI / 180;
 	double s = sin( radians );
 	double c = cos( radians );
